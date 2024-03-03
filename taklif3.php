@@ -23,30 +23,24 @@ if ($db_conn->query($query) === true) {
         `is_email_verified` BOOLEAN NOT NULL DEFAULT FALSE,
         `is_admin` BOOLEAN NOT NULL
         ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4"; // I preffer InnoDB for compatibility
-    if ($db_conn->query($query) === true) { // Comment if inserted before
-        $query = "INSERT INTO `users` (`username`, `first_name`, `last_name`, `email`, `is_admin`) VALUES
-            ('MalinoRev','Arash','Heidari','malinorev@gmail.com',false),
-            ('Mohammad77','Mamad','Hosseini','mamad77@gmail.com',false),
-            ('AhmadLOO','Ahmad','Zoghi','to_mano_emtehan_kon@gmail.com',true);";
-        if ($db_conn->query($query) === true) { exit("done!"); } else { exit("can not insert the data"); }
+    if ($db_conn->query($query) === true) {
+        $data = file_get_contents("php://input");
+        $data_json = json_decode($data); // add , true if not working on your php engine version
+        if ($_GET['type'] == 'register') {
+            $username = $data_json->username;
+            $first_name = $data_json->first_name;
+            $last_name = $data_json->last_name;
+            $email = $data_json->email;
+            $query = "INSERT INTO `users` (`username`, `first_name`, `last_name`, `email`, `is_admin`) VALUES('$username','$first_name','$last_name','$email',false);";
+            if ($db_conn->query($query) === true) { exit("done!"); } else { exit("can not register"); }
+        }
+        if ($_GET['type'] == 'unregister') {
+            $username = $data_json->username;
+            $query = "DELETE FROM `users` WHERE `username` = '$username'";
+            if ($db_conn->query($query) === true) { exit("done!"); } else { exit("can not unregister"); }
+        }
     } else { exit("can not create the table"); }
 } else { exit("can not create the database"); }
-
-$data = file_get_contents("php://input");
-$data_json = json_decode($data); // add , true if not working on your php engine version
-if ($_GET['type'] == 'register') {
-    $username = $data_json->username;
-    $first_name = $data_json->first_name;
-    $last_name = $data_json->last_name;
-    $email = $data_json->email;
-    $query = "INSERT INTO `users` (`username`, `first_name`, `last_name`, `email`, `is_admin`) VALUES('$username','$first_name','$last_name','$email',false);";
-    if ($db_conn->query($query) === true) { exit("done!"); } else { exit("can not register"); }
-}
-if ($_GET['type'] == 'unregister') {
-    $username = $data_json->username;
-    $query = "DELETE FROM `users` WHERE `username` = '$username'";
-    if ($db_conn->query($query) === true) { exit("done!"); } else { exit("can not unregister"); }
-}
 
 $db_conn->close();
 ?>
